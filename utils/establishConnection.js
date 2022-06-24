@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
 
+require('dotenv').config()
 const establishConnection = async (hasDatabase) =>
 {   
 
@@ -8,8 +9,8 @@ const establishConnection = async (hasDatabase) =>
     {
         connection = await mysql.createConnection({
             host: 'localhost',
-            user: 'nikizefanya',
-            password: 'everysummertime',
+            user: `${process.env.DB_USERNAME}`,
+            password: `${process.env.DB_PASSWORD}`,
             database:'PostTagService'
         });
     }
@@ -17,8 +18,8 @@ const establishConnection = async (hasDatabase) =>
     {
         connection = await mysql.createConnection({
             host: 'localhost',
-            user: 'nikizefanya',
-            password: 'everysummertime'
+            user: `${process.env.DB_USERNAME}`,
+            password: `${process.env.DB_PASSWORD}`
         });
     }
     return connection 
