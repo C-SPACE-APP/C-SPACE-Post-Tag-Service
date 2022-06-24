@@ -1,30 +1,33 @@
 const establishConnection = require('../utils/establishConnection')
 const axios = require('axios')
 
-const createPost = async (req,res) => {
+const associatePostWithTag = async (req,res) => {
     const reqLength = Object.keys(req.body).length
-    const {title, description,userID} = req.body
-    let postPayload
+    const {postID,tagIDArray} = req.body
+    let postPayload,duplicateChecker
     
     // request validation, if either title,description, or username is not included in the request parameters,
     // the request will fail.
-    if(reqLength != 3 || !title || !description || !userID)
+    if(reqLength != 2 || !postID || !tagIDArray)
         return res.status(400).json({message:"Bad request"})
+
+    if(tagIDArray.isArray)
+        if(tagIDArray.length === 0)
+            return res.status(400).json({message:"Request body has an array of tag ID with length zero"})
+    else
+        return res.status(400).json({message:"tagIDArray is not an array"})
     
     let connection = await establishConnection(true)
     try
     {
-        postPayload = await connection.execute("INSERT INTO Post VALUES (0,?,?,CURDATE(),CURDATE())",[title,description])
-        postID = postPayload[0]["insertId"]
-        // axios call to interaction (creating new data for interaction)
-        await axios({
-            method: 'post',
-            data:{
-                userID:userID,
-                postID:postID
-            },
-            url: 'http://localhost:3005/createPostInteraction/'
-        })
+        for(let iterator = 0; iterator < tagIDArray.length; iterator++)
+        {
+            duplicateChecker = await connection.execute("SELECT * FROM PostTag WHERE postID = ? AND tagID = ?",[postID,tagIDArray[iterator]])
+            if(duplicateChecker[0].length > 0)
+                return res.status(403).json({message:"Selected post has a duplicate tag associated with it"})
+            postPayload = await connection.execute("INSERT INTO PostTag VALUES (?,?)",[postID,tagIDArray[iterator]])
+        }
+            
     }
     catch(err)
     {
@@ -32,17 +35,16 @@ const createPost = async (req,res) => {
         return res.status(400).json({returnData:null,message:`${err}`})
     }
     await connection.destroy()
-    return res.status(200).json({returnData:postPayload,message:"Successfully created post!"}) 
+    return res.status(200).json({returnData:postPayload,message:"Successfully associated post with tag(s)!"}) 
 }
 
-const getPostsByPage = async (req,res) => {
-    const reqLength = Object.keys(req.body).length
-    const {pageNumber,limitPerPage} = req.params
-    const lowerLimit = (pageNumber - 1) * limitPerPage + 1 
-    const upperLimit = pageNumber * limitPerPage
+const getTagsPerPost = async (req,res) => {
+    const reqLength = Object.keys(req.params).length
+    const {postID} = req.params
+    let tagIDArray,fullDetails
     // request validation, if either username or password is not included in the request parameters,
     // the request will fail.
-    if(reqLength != 2 || !pageNumber || !limitPerPage)
+    if(reqLength != 1 || !postID)
         return res.status(400).json({
             message:"Bad request"
         })
@@ -51,7 +53,12 @@ const getPostsByPage = async (req,res) => {
     
     try
     {
-        postArr = await connection.execute("SELECT * FROM InteractionService.interaction LEFT JOIN PostService.post ON InteractionService.interaction.postID = PostService.post.postID WHERE InteractionService.interaction.commentID IS NULL AND InteractionService.interaction.replyID IS NULL AND InteractionService.interaction.postID >= ? AND InteractionService.interaction.postID <= ?",[lowerLimit,upperLimit])
+        postArr = await connection.execute("SELECT tagID FROM PostTagService.PostTag WHERE postID = ?",[postID])
+        tagIDArray = postArr[0].map(
+            (value) =>
+            {
+                return value["tagID"]
+            })
     }   
     catch(err)
     {
@@ -62,11 +69,11 @@ const getPostsByPage = async (req,res) => {
 
     // returns either true or false depending if the credentials matched with the database
     if (postArr)
-        res.status(200).json({returnData:postArr[0]})
+        res.status(200).json({returnData:fullDetails})
     else
         res.status(200).json({returnData:false})
 }
 
 
 
-module.exports = {createPost,getPostsByPage}
+module.exports = {associatePostWithTag,getTagsPerPost}

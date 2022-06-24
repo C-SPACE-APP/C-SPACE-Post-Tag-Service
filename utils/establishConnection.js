@@ -10,7 +10,7 @@ const establishConnection = async (hasDatabase) =>
             host: 'localhost',
             user: 'nikizefanya',
             password: 'everysummertime',
-            database:'PostService'
+            database:'PostTagService'
         });
     }
     else

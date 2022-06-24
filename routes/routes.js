@@ -1,4 +1,4 @@
-const {createPost,getPostsByPage} = require('../controllers/controllers')
+const {associatePostWithTag,getTagsPerPost} = require('../controllers/controllers')
 const {Authorize} = require('../middlewares')
 const express = require('express');
 
@@ -6,8 +6,8 @@ const express = require('express');
 const router = express.Router()
 
 
-router.post('/createPost',createPost)
-router.get('/getPostsByPage/:pageNumber/:limitPerPage',getPostsByPage)
-// router.get('/getPostsDescending',getPostsDescending)
+router.post('/associatePostWithTag',associatePostWithTag)
+router.get('/getTagsPerPost/:postID',getTagsPerPost)
+
 
 module.exports = router; 
