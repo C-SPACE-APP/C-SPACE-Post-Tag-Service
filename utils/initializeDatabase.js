@@ -4,7 +4,7 @@ const initializeDatabase = async () =>
 {
     let isSuccessful = false
     const createDatabaseQuery = "CREATE DATABASE IF NOT EXISTS PostTagService;"
-    const createTableQuery = "CREATE TABLE IF NOT EXISTS PostTag(postID INT, tagID TEXT);"
+    const createTableQuery = "CREATE TABLE IF NOT EXISTS PostTag(postID INT, tagName TEXT);"
     let connection
     try
     {
