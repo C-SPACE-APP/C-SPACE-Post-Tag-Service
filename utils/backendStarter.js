@@ -13,7 +13,10 @@ const app = express()
 const startBackend = port =>
 {
     app.use(bodyparser.json())
-    app.use(cors())
+    app.use(cors({
+        credentials: true,
+        origin: 'http://localhost:3000'
+    }))
 
 
     // entry point of endpoints
