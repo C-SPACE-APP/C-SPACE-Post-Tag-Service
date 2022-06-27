@@ -74,5 +74,37 @@ const getTagsPerPost = async (req,res) => {
 }
 
 
+const getTagCountByTagName = async (req,res) => {
+    const reqLength = Object.keys(req.params).length
+    const {tagName} = req.params
+    let returnValue, tagCount
+    // request validation, if either username or password is not included in the request parameters,
+    // the request will fail.
+    if(reqLength != 1 || !tagName)
+        return res.status(400).json({
+            message:"Bad request"
+        })
+    
+    let connection = await establishConnection(true)
+    
+    try
+    {
+        returnValue = await connection.execute("SELECT COUNT(tagName) AS tagCount FROM PostTagService.PostTag WHERE tagName = ? GROUP BY tagName",[tagName])
+        tagCount = returnValue[0][0]["tagCount"]
+    }   
+    catch(err)
+    {
+        await connection.destroy()
+        return res.status(400).json({returnData:null,message:`${err}`})
+    }
+    await connection.destroy()
 
-module.exports = {associatePostWithTag,getTagsPerPost}
+    // returns either true or false depending if the credentials matched with the database
+    if (tagCount)
+        res.status(200).json({returnData:tagCount})
+    else
+        res.status(200).json({returnData:false})
+}
+
+
+module.exports = {associatePostWithTag,getTagsPerPost,getTagCountByTagName}
