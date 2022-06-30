@@ -74,6 +74,38 @@ const getTagsPerPost = async (req,res) => {
 }
 
 
+const getPostsPerTag = async (req,res) => {
+    const reqLength = Object.keys(req.params).length
+    const {postID} = req.params
+    let tagNameArray
+    // request validation, if either username or password is not included in the request parameters,
+    // the request will fail.
+    if(reqLength != 1 || !postID)
+        return res.status(400).json({
+            message:"Bad request"
+        })
+    
+    let connection = await establishConnection(true)
+    
+    try
+    {
+        postArr = await connection.execute("SELECT * FROM PostTagService.PostTag INNER JOIN InteractionService.interaction ON PostTagService.posttag.postID = InteractionService.interaction.postID WHERE PostTagService.posttag.tagName = ? AND commentID IS NULL AND parentID IS NULL",[postID])
+    }   
+    catch(err)
+    {
+        await connection.destroy()
+        return res.status(400).json({returnData:null,message:`${err}`})
+    }
+    await connection.destroy()
+
+    // returns either true or false depending if the credentials matched with the database
+    if (postArr)
+        res.status(200).json({returnData:tagNameArray})
+    else
+        res.status(200).json({returnData:false})
+}
+
+
 const getTagCountByTagName = async (req,res) => {
     const reqLength = Object.keys(req.params).length
     const {tagName} = req.params
@@ -107,4 +139,4 @@ const getTagCountByTagName = async (req,res) => {
 }
 
 
-module.exports = {associatePostWithTag,getTagsPerPost,getTagCountByTagName}
+module.exports = {associatePostWithTag,getTagsPerPost,getTagCountByTagName,getPostsPerTag}
