@@ -1,4 +1,4 @@
-const {associatePostWithTag,getTagsPerPost, getTagCountByTagName, getPostsPerTag} = require('../controllers/controllers')
+const {associatePostWithTag,getTagsPerPost, getTagCountByTagName, getPostsPerTag, unassociatePostTag} = require('../controllers/controllers')
 const {Authorize} = require('../middlewares')
 const express = require('express');
 
@@ -10,5 +10,6 @@ router.post('/associatePostWithTag',associatePostWithTag)
 router.get('/getTagsPerPost/:postID',getTagsPerPost)
 router.get('/getPostsPerTag/:tagName',getPostsPerTag)
 router.get('/getTagCount/:tagName',getTagCountByTagName)
+router.delete('/unassociatePostTag/:postID/:tagName',unassociatePostTag)
 
 module.exports = router; 
