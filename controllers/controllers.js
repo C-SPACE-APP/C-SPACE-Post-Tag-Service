@@ -100,7 +100,7 @@ const getPostsPerTag = async (req,res) => {
 
     // returns either true or false depending if the credentials matched with the database
     if (postArr)
-        res.status(200).json({returnData:postArr})
+        res.status(200).json({returnData:postArr[0]})
     else
         res.status(200).json({returnData:false})
 }
