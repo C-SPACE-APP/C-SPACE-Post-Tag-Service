@@ -16,15 +16,15 @@ const associatePostWithTag = async (req,res) => {
     else
         return res.status(400).json({message:"tagNameArray is not an array"})
     
-    let connection = await establishConnection(true)
+    let connection = await establishConnection(false)
     try
     {
         for(let iterator = 0; iterator < tagNameArray.length; iterator++)
         {
-            duplicateChecker = await connection.execute("SELECT * FROM PostTag WHERE postID = ? AND tagName = ?",[postID,tagNameArray[iterator]])
+            duplicateChecker = await connection.execute("SELECT * FROM PostTagService.PostTag WHERE PostTagService.PostTag.postID = ? AND PostTagService.PostTag.tagName = ?",[postID,tagNameArray[iterator]])
             if(duplicateChecker[0].length > 0)
                 return res.status(403).json({message:"Selected post has a duplicate tag associated with it"})
-            postPayload = await connection.execute("INSERT INTO PostTag VALUES (?,?)",[postID,tagNameArray[iterator]])
+            postPayload = await connection.execute("INSERT INTO PostTagService.PostTag VALUES (?,?)",[postID,tagNameArray[iterator]])
         }
             
     }
@@ -48,7 +48,7 @@ const getTagsPerPost = async (req,res) => {
             message:"Bad request"
         })
     
-    let connection = await establishConnection(true)
+    let connection = await establishConnection(false)
     
     try
     {
@@ -76,20 +76,20 @@ const getTagsPerPost = async (req,res) => {
 
 const getPostsPerTag = async (req,res) => {
     const reqLength = Object.keys(req.params).length
-    const {postID} = req.params
-    let tagNameArray
+    const {tagName} = req.params
+    let postArr
     // request validation, if either username or password is not included in the request parameters,
     // the request will fail.
-    if(reqLength != 1 || !postID)
+    if(reqLength != 1 || !tagName)
         return res.status(400).json({
             message:"Bad request"
         })
     
-    let connection = await establishConnection(true)
+    let connection = await establishConnection(false)
     
     try
     {
-        postArr = await connection.execute("SELECT * FROM PostTagService.PostTag INNER JOIN InteractionService.interaction ON PostTagService.posttag.postID = InteractionService.interaction.postID WHERE PostTagService.posttag.tagName = ? AND commentID IS NULL AND parentID IS NULL",[postID])
+        postArr = await connection.execute("SELECT * FROM PostTagService.PostTag INNER JOIN InteractionService.interaction ON PostTagService.posttag.postID = InteractionService.interaction.postID WHERE PostTagService.posttag.tagName = ? AND InteractionService.interaction.commentID IS NULL AND InteractionService.interaction.parentID IS NULL",[tagName])
     }   
     catch(err)
     {
@@ -100,7 +100,7 @@ const getPostsPerTag = async (req,res) => {
 
     // returns either true or false depending if the credentials matched with the database
     if (postArr)
-        res.status(200).json({returnData:tagNameArray})
+        res.status(200).json({returnData:postArr})
     else
         res.status(200).json({returnData:false})
 }
@@ -121,7 +121,7 @@ const getTagCountByTagName = async (req,res) => {
     
     try
     {
-        returnValue = await connection.execute("SELECT COUNT(tagName) AS tagCount FROM PostTagService.PostTag WHERE tagName = ? GROUP BY tagName",[tagName])
+        returnValue = await connection.execute("SELECT COUNT(tagName) AS tagCount FROM PostTagService.PostTag WHERE PostTagService.PostTag.tagName = ? GROUP BY PostTagService.PostTag.tagName",[tagName])
         tagCount = returnValue[0][0]["tagCount"]
     }   
     catch(err)
