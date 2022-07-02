@@ -10,6 +10,6 @@ router.post('/associatePostWithTag',associatePostWithTag)
 router.get('/getTagsPerPost/:postID',getTagsPerPost)
 router.get('/getPostsPerTag/:tagName',getPostsPerTag)
 router.get('/getTagCount/:tagName',getTagCountByTagName)
-router.delete('/unassociatePostTag/:postID/:tagName',unassociatePostTag)
+router.delete('/unassociatePostTag/:postID',unassociatePostTag)
 
 module.exports = router; 

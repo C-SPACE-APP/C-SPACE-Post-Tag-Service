@@ -140,17 +140,17 @@ const getTagCountByTagName = async (req,res) => {
 
 const unassociatePostTag = async (req,res) => {
     const reqLength = Object.keys(req.params).length
-    const {postID,tagName} = req.params
+    const {postID} = req.params
     
     // request validation, if either title,description, or username is not included in the request parameters,
     // the request will fail.
-    if(reqLength != 2 || !postID || !tagName)
+    if(reqLength != 1 || !postID)
         return res.status(400).json({message:"Bad request"})
     
     let connection = await establishConnection(false)
     try
     {
-        await connection.execute("DELETE FROM PostTagService.PostTag WHERE postID = ? AND tagName = ?",[postID,tagName])
+        await connection.execute("DELETE FROM PostTagService.PostTag WHERE postID = ?",[postID])
     }
     catch(err)
     {
@@ -158,7 +158,7 @@ const unassociatePostTag = async (req,res) => {
         return res.status(400).json({message:`${err}`})
     }
     await connection.destroy()
-    return res.status(200).json({message:"Successfully unassociated selected post and tag!"}) 
+    return res.status(200).json({message:"Successfully unassociated tags from a post!"}) 
 }
 
 module.exports = {associatePostWithTag,getTagsPerPost,getTagCountByTagName,getPostsPerTag,unassociatePostTag}
